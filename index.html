@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,minimum-scale=1,maximum-scale=1">
+  <title>Document</title>
+  <style>
+    .multi-no-wrap {
+      padding-bottom: 10px;
+      line-height: 32px;
+      border: 1px solid #eee;
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+  </style>
+</head>
+<body>
+  <input type="date"></br>
+  <input type="datetime"></br>
+  <input type="datetime-local"></br>
+  <input type="month"></br>
+  <input type="week"></br>
+  <input type="time"></br>
+  <input type="file" accept="image/*" capture="camera"></br>
+  <div>31231231231231232133123123123123123213312312312312312321331231231231231232133123123123123123213</div>
+  
+  <p class="multi-no-wrap">
+    多行文字, 超长溢出将会在最后一行显示省略号, 啦啦啦啦啦我是为了凑数啦啦啦啦啦我是为了凑数
+  </p>
+  
+</body>
+</html>
