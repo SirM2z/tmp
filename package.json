@@ -1,0 +1,27 @@
+{
+  "name": "csdn-spider",
+  "version": "1.0.0",
+  "description": "add up csdn views",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SirM2z/tmp.git"
+  },
+  "keywords": [
+    "spider",
+    "csdn"
+  ],
+  "author": "z",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SirM2z/tmp/issues"
+  },
+  "homepage": "https://github.com/SirM2z/tmp#readme",
+  "dependencies": {
+    "cheerio": "^0.20.0",
+    "superagent": "^1.8.3"
+  }
+}

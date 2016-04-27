@@ -5,8 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,minimum-scale=1,maximum-scale=1">
   <title>Document</title>
   <style>
+    *{
+      margin: 0;
+      padding: 0;
+    }
+    html{
+      font-size: 62.5%;
+    }
+    .rem{
+      font-size: 1.4rem;
+    }
+    .px{
+      font-size: 14px;
+    }
     .multi-no-wrap {
-      padding-bottom: 10px;
       line-height: 32px;
       border: 1px solid #eee;
       display: -webkit-box;
@@ -14,6 +26,20 @@
       text-overflow: ellipsis;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
+    }
+    .word-break{
+      word-break: break-all;
+    }
+    .word-wrap{
+      word-wrap: break-word;
+    }
+    ul{
+      width: 100%;
+    }
+    ul li{
+      list-style: none;
+      width: 20%;
+      float: left;
     }
   </style>
 </head>
@@ -25,11 +51,23 @@
   <input type="week"></br>
   <input type="time"></br>
   <input type="file" accept="image/*" capture="camera"></br>
-  <div>31231231231231232133123123123123123213312312312312312321331231231231231232133123123123123123213</div>
   
-  <p class="multi-no-wrap">
+  <p class="multi-no-wrap word-break">
     多行文字, 超长溢出将会在最后一行显示省略号, 啦啦啦啦啦我是为了凑数啦啦啦啦啦我是为了凑数
   </p>
   
+  
+  <p class="multi-no-wrap word-wrap">This paragraph contains a very long word: thisisaveryveryveryveryveryverylongword. The long word will break and wrap to the next line.</p>
+  <p class="multi-no-wrap word-break">This paragraph contains a very long word: thisisaveryveryveryveryveryverylongword. The long word will break and wrap to the next line.</p>
+  
+  <div class="rem">哈哈</div>
+  <div class="px">哈哈</div>
+  <ul>
+    <li><img src="u22.png" width="" style="width:100%;" alt=""></li>
+    <li><img src="u22.png" width="" style="width:100%;" alt=""></li>
+    <li><img src="u22.png" width="" style="width:100%;" alt=""></li>
+    <li><img src="u22.png" width="" style="width:100%;" alt=""></li>
+    <li><img src="u22.png" width="" style="width:100%;" alt=""></li>
+  </ul>
 </body>
 </html>
