@@ -9,10 +9,28 @@ var coc_config = {
     getDataUrl:'http://heycoc.com/usercenter.php',
     cookie:'',
     list:[
-        '当前金币',
-        '当前紫水',
-        '当前黑水',
-        '总挂机时长'
+        [
+            '村庄数据--无用'
+        ],
+        [
+            '推荐配置--无用'
+        ],
+        [
+            '当前金币',
+            '当前紫水',
+            '当前黑水'
+        ],
+        [
+            '日抢金币',
+            '日抢紫水',
+            '日抢黑水'
+        ],
+        [
+            '共抢金币',
+            '共抢紫水',
+            '共抢黑水',
+            '总挂机时长'
+        ]
     ]
 }
 
@@ -75,23 +93,11 @@ function coc_getData(){
                     $(item).find('ul li').each(function(_index,_item){
                         console.log('     '+$(_item).text());
                     })
-                }else if(index===2){//当前资源
+                }else{
                     console.log('\n');
                     console.log('---'+$(item).find('legend').text()+'----------------');
                     $(item).find('div>span.progressbar').each(function(_index,_item){
-                        console.log('     '+coc_config.list[_index]+': '+$(_item).data('perc'));
-                    })
-                }else if(index===3){//今天挂机
-                    console.log('\n');
-                    console.log('---'+$(item).find('legend').text()+'------');
-                    $(item).find('div>span.progressbar').each(function(_index,_item){
-                        console.log('     '+coc_config.list[_index]+': '+$(_item).data('perc'));
-                    })
-                }else if(index===4){//累计资源
-                    console.log('\n');
-                    console.log('---'+$(item).find('legend').text()+'----------------');
-                    $(item).find('div>span.progressbar').each(function(_index,_item){
-                        console.log('     '+coc_config.list[_index]+': '+$(_item).data('perc'));
+                        console.log('     '+coc_config.list[index][_index]+': '+$(_item).data('perc'));
                     })
                 }
             })
