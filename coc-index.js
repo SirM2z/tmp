@@ -2,8 +2,8 @@ var request = require('superagent');
 var cheerio = require('cheerio');
 
 var coc_config = {
-    username:'530103664',
-    password:'530103664',
+    username:'',//用户名
+    password:'',//密码
     loginUrl:'http://heycoc.com/',
     postUrl:'http://heycoc.com/cocplayer.php',
     getDataUrl:'http://heycoc.com/usercenter.php',
