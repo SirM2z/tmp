@@ -104,4 +104,5 @@ function coc_getData(){
         })
 }
 
+console.log(new Date().toLocaleString());
 coc_start();
