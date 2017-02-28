@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/SirM2z/tmp#readme",
   "dependencies": {
-    "cheerio": "^0.20.0",
-    "superagent": "^1.8.3"
+    "cheerio": "^0.22.0",
+    "superagent": "^3.5.0"
   }
 }
