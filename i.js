@@ -26,6 +26,7 @@ async function start() {
   let $ = cheerio.load(res.data)
   startViews = $('#blog_rank li span')[0].children[0].data
   console.log(`当前访问量：${startViews}`)
+  console.log(`---------------------------------------`)
   const blogList = $('#article_list .list_item')
   blogNum = blogList.length
   let promises = []
