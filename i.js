@@ -10,7 +10,8 @@ function writeLog (content) {
 }
 
 const rootUrl = 'http://blog.csdn.net'
-const stratUrl = 'http://blog.csdn.net/sirm2z/article/list/'
+const stratUrl = 'http://blog.csdn.net/sirm2z'
+const listUrl = 'http://blog.csdn.net/sirm2z/svc/getarticles?pageindex=1&pagesize=100&categoryId=0'
 let startViews = null
 let endViews = null
 let blogNum = 0
@@ -18,23 +19,21 @@ let successNum = 0
 let errNum = 0
 
 async function start() {
-  let res = await axios({
-    method: 'get',
-    url: 'http://blog.csdn.net/sirm2z?viewmode=contents',
-    responseType: 'text'
-  })
+  let res = await axios.get(stratUrl)
   let $ = cheerio.load(res.data)
-  startViews = $('#blog_rank li span')[0].children[0].data
+  startViews = $('.gradeAndbadge .num')[0].children[0].data
   console.log(`当前访问量：${startViews}`)
   console.log(`---------------------------------------`)
-  const blogList = $('#article_list .list_item')
+  let listRes = await axios.get(listUrl)
+  let list$ = cheerio.load(listRes.data)
+  const blogList = list$('.blog-unit')
   blogNum = blogList.length
   let promises = []
   blogList.each((i, item, arr) => {
-    let url = rootUrl + $(item).find('span.link_title a')[0].attribs.href
+    let url = rootUrl + list$(item).find('h3 a')[0].attribs.href
     promises[i] = axios.get(url).then(res => res.data).then(r => {
       let $ = cheerio.load(r)
-      let title = $('#article_details h1 a').text().trim()
+      let title = $('h1.csdn_top').text().trim()
       console.log(`我已经来到-${title}`)
       successNum++
     }).catch((error) => {
@@ -69,19 +68,15 @@ async function start() {
     })
   })
   Promise.all(promises).then((result) => {
-    return axios({
-      method: 'get',
-      url: 'http://blog.csdn.net/sirm2z?viewmode=contents',
-      responseType: 'text'
-    })
+    return axios.get(stratUrl)
   }).then(res => {
     let $ = cheerio.load(res.data)
-    endViews = $('#blog_rank li span')[0].children[0].data
+    endViews = $('.gradeAndbadge .num')[0].children[0].data
     console.log(`---------------------------------------`)
     console.log(`成功访问量：${successNum}`)
     console.log(`失败访问量：${errNum}`)
     console.log(`当前访问量：${endViews}`)
-    console.log(`本次访问量增加了：${parseInt(endViews.split('次')[0]) - parseInt(startViews.split('次')[0])}`)
+    console.log(`本次访问量增加了：${parseInt(endViews.replace(',','')) - parseInt(startViews.replace(',',''))}`)
     console.log(`---------------------------------------`)
     console.log('end')
   }).catch((err) => {
