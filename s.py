@@ -29,21 +29,21 @@ def start():
         url = item.find('h4').find('a').attrs['href']
         item_re = requests.get(url, timeout=5)
         item_soup = BeautifulSoup(item_re.content, "html5lib")
-        title = item_soup.find('h6', class_='title-article').string
+        title = item_soup.find('h1', class_='title-article').string
         print('我已经来到-%s' % title)
         success_num += 1
     for item in list_li2:
         url = item.find('h4').find('a').attrs['href']
         item_re = requests.get(url, timeout=5)
         item_soup = BeautifulSoup(item_re.content, "html5lib")
-        title = item_soup.find('h6', class_='title-article').string
+        title = item_soup.find('h1', class_='title-article').string
         print('我已经来到-%s' % title)
         success_num += 1
     for item in list_li3:
         url = item.find('h4').find('a').attrs['href']
         item_re = requests.get(url, timeout=5)
         item_soup = BeautifulSoup(item_re.content, "html5lib")
-        title = item_soup.find('h6', class_='title-article').string
+        title = item_soup.find('h1', class_='title-article').string
         print('我已经来到-%s' % title)
         success_num += 1
     result = requests.get(strat_url, timeout=5)

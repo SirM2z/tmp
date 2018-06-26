@@ -37,7 +37,7 @@ async function start() {
     let url = list$(item).find('h4 a')[0].attribs.href
     promises[i] = axios.get(url).then(res => res.data).then(r => {
       let $ = cheerio.load(r)
-      let title = $('h6.title-article').text().trim()
+      let title = $('h1.title-article').text().trim()
       console.log(`我已经来到-${title}`)
       successNum++
     }).catch((error) => {
