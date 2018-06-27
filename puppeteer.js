@@ -8,7 +8,11 @@ const  clickA = async (p) => {
 };
 
 (async () => {
-  const browser = await puppeteer.launch({headless: false, slowMo: 250});
+  const width = 1410;
+  const height = 900;
+  let args = [];
+  args.push(`--window-size=${width},${height}`);
+  const browser = await puppeteer.launch({headless: false, args});
   // const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.goto('https://blog.csdn.net/sirm2z', {waitUntil: 'load'});
