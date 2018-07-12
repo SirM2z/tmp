@@ -12,9 +12,10 @@ const  clickA = async (p) => {
   const height = 900;
   let args = [];
   args.push(`--window-size=${width},${height}`);
-  const browser = await puppeteer.launch({headless: false, args});
+  const browser = await puppeteer.launch({headless: false, slowMo: 250, args});
   // const browser = await puppeteer.launch();
   const page = await browser.newPage();
+  await page._client.send('Emulation.clearDeviceMetricsOverride');
   await page.goto('https://blog.csdn.net/sirm2z', {waitUntil: 'load'});
   await clickA(page);
   const navigationPromise1 = page.waitForNavigation();
