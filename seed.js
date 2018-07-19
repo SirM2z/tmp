@@ -69,6 +69,7 @@ const printHtml = async (page) => {
   await page.click(CANSHIFEI_SELECTOR);
   await delay(1000);
   for (let i = 0; ; i++) {
+    await delay(1000);
     await page.waitForSelector(FIRSTFRIENDSLIST_SELECTOR);
     const first = await page.$(FIRSTFRIENDS_SELECTOR);
     if (first) {
