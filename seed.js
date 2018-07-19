@@ -36,25 +36,6 @@ const delay = (t) => {
   });
 }
 
-const jiaoshui = async (page, navigationPromise) => {
-
-  await page.click(FIRSTFRIENDS_SELECTOR);
-
-  await navigationPromise;
-
-  // printHtml(page, navigationPromise);
-
-  await page.waitForSelector(TEST);
-
-  await page.click(TEST);
-
-  await delay(1000);
-
-  await page.click(BACKFAMER_SELECTOR);
-
-  await navigationPromise;
-};
-
 const printHtml = async (page) => {
   const bodyHandle = await page.$(TEST);
   const html = await page.evaluate(body => body.innerHTML, bodyHandle);
@@ -72,69 +53,38 @@ const printHtml = async (page) => {
   const page = await browser.newPage();
   await page._client.send('Emulation.clearDeviceMetricsOverride');
   await page.goto('https://passport.futu5.com/?target=https%3A%2F%2Fseed.futunn.com%2F', {waitUntil: 'load'});
-
   await page.setDefaultNavigationTimeout(60 * 1000);
-
   const navigationPromise = page.waitForNavigation();
-
   // await page.click(XIAOMI_SELECTOR);
-
   // await navigationPromise;
-
   await page.type(USERNAME_SELECTOR, CREDS.username);
   await page.type(PASSWORD_SELECTOR, CREDS.password);
   await page.click(BUTTON_SELECTOR);
   // await page.type(XIAOMI_USERNAME_SELECTOR, CREDS.xiaomiuser);
   // await page.type(XIAOMI_PASSWORD_SELECTOR, CREDS.xiaomipass);
   // await page.click(XIAOMI_BUTTON_SELECTOR);
-
   await navigationPromise;
-
   await page.click(HUDONG_SELECTOR);
-
   await navigationPromise;
-
   await page.click(CANSHIFEI_SELECTOR);
-
   await delay(1000);
-  let cirle = true;
-  while(cirle) {
+  for (let i = 0; ; i++) {
     await page.waitForSelector(FIRSTFRIENDSLIST_SELECTOR);
     const first = await page.$(FIRSTFRIENDS_SELECTOR);
     if (first) {
-      await jiaoshui(page, navigationPromise);
+      // await jiaoshui(page, navigationPromise);
+      await page.click(FIRSTFRIENDS_SELECTOR);
+      await navigationPromise;
+      // printHtml(page, navigationPromise);
+      await delay(1000);
+      await page.waitForSelector(TEST);
+      await page.click(TEST);
+      await delay(1000);
+      await page.click(BACKFAMER_SELECTOR);
+      await navigationPromise;
     } else {
-      cirle = false
+      break
     }
-  };
+  }
   console.log('浇水结束');
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await jiaoshui(page, navigationPromise);
-  // await page.click(FIRSTFRIENDS_SELECTOR);
-
-  // await navigationPromise;
-
-  // await page.click(JIAOSHUI_SELECTOR);
-
-  // await delay(2000);
-
-  // await page.click(BACKFAMER_SELECTOR);
-
-  // await navigationPromise;
-
-
-  
-  // await browser.close();
 })();
