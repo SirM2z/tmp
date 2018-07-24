@@ -71,6 +71,10 @@ const WB_BUTTON_SELECTOR = '#outer > div > div.WB_panel.oauth_main > form > div 
 // #endregion
 
 // #region main
+// 收种子
+const GET_SELECTOR = '#useCanvas';
+// 使用种子
+const USE_SELECTOR = 'body > div.floatBox01.seedDetailBox > div > div.btnBar01.ng-scope > a:nth-child(2)';
 // 给自己浇水
 const SELF_SELECTOR = '#waterCanvas';
 // 活动
@@ -126,6 +130,8 @@ const seed = async (type) => {
     await page.type(XIAOMI_USERNAME_SELECTOR, xiaomi.name);
     await page.type(XIAOMI_PASSWORD_SELECTOR, xiaomi.pwd);
     await page.click(XIAOMI_BUTTON_SELECTOR);
+    await delay(3000);
+    await delay(3000);
     await delay(3000);
     await navigationPromise;
   } else if (['Q1', 'Q2', 'Q3', 'Q4', 'Q5'].includes(type)) {
@@ -198,6 +204,13 @@ const seed = async (type) => {
     await navigationPromise;
   }
   console.log(`${type}---浇水开始！`);
+  const getZhongzi = await page.$(GET_SELECTOR);
+  if (getZhongzi) {
+    await page.click(GET_SELECTOR);
+    await delay(1000);
+    await page.click(USE_SELECTOR);
+  }
+  await delay(1000);
   await page.click(SELF_SELECTOR);
   await delay(1000);
   await page.click(HUDONG_SELECTOR);
@@ -231,19 +244,18 @@ const seed = async (type) => {
 (async () => {
   // 主号 走一波
   await seed('self');
-  // 小米 走一波
+  // // 小米 走一波
   // await seed('xiaomi');
-  // Q 走一波
+  // // Q 走一波
   // await seed('Q1');
   // await seed('Q2');
   // await seed('Q3');
   // await seed('Q4');
   // await seed('Q5');
-  // await seed('Q5');
-  // 脸书 走一波
+  // // 脸书 走一波
   // await seed('fb');
-  // twitter 走一波
+  // // twitter 走一波
   // await seed('tw');
-  // weibo 走一波
+  // // weibo 走一波
   // await seed('wb');
 })()
