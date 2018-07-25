@@ -207,12 +207,12 @@ const seed = async (type) => {
   for (let i = 0; ; i++) {
     await delay(1000);
     await page.waitForSelector(FIRSTFRIENDSLIST_SELECTOR);
+    // printHtml(page, FIRSTFRIENDSLIST_SELECTOR);
     const first = await page.$(FIRSTFRIENDS_SELECTOR);
     if (first) {
       console.log(`第${++nums}人---浇水`);
       await page.click(FIRSTFRIENDS_SELECTOR);
       await navigationPromise;
-      // printHtml(page);
       await delay(3000);
       await page.waitForSelector(TEST);
       await page.click(TEST);
