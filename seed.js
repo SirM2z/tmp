@@ -75,6 +75,8 @@ const WB_BUTTON_SELECTOR = '#outer > div > div.WB_panel.oauth_main > form > div 
 const GET_SELECTOR = '#useCanvas';
 // 使用种子
 const USE_SELECTOR = 'body > div.floatBox01.seedDetailBox > div > div.btnBar01.ng-scope > a:nth-child(2)';
+// 关闭种子使用 弹出框
+const CLOSE_SELECTOR = 'body > div:nth-child(13) > div > div.btnBar01 > a';
 // 给自己浇水
 const SELF_SELECTOR = '#waterCanvas';
 // 活动
@@ -111,14 +113,15 @@ const seed = async (type) => {
   const height = 950;
   let args = [];
   args.push(`--window-size=${width},${height}`);
-  const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
-  // const browser = await puppeteer.launch();
+  // const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
+  const browser = await puppeteer.launch({slowMo: 300});
   const page = await browser.newPage();
   // 去除 页面内部自定义宽高 导致 滚动条出现
   await page._client.send('Emulation.clearDeviceMetricsOverride');
   await page.goto(LOGIN_URL, {waitUntil: 'load'});
   await page.setDefaultNavigationTimeout(60 * 1000);
   const navigationPromise = page.waitForNavigation();
+  console.log(`开始判断当前角色-${type}`);
   if (type === 'self') {
     await page.type(USERNAME_SELECTOR, user.name);
     await page.type(PASSWORD_SELECTOR, user.pwd);
@@ -131,8 +134,8 @@ const seed = async (type) => {
     await page.type(XIAOMI_PASSWORD_SELECTOR, xiaomi.pwd);
     await page.click(XIAOMI_BUTTON_SELECTOR);
     await delay(3000);
-    await delay(3000);
-    await delay(3000);
+    // await delay(3000);
+    // await delay(3000);
     await navigationPromise;
   } else if (['Q1', 'Q2', 'Q3', 'Q4', 'Q5'].includes(type)) {
     await page.click(Q_SELECTOR);
@@ -170,8 +173,8 @@ const seed = async (type) => {
     await loginFrame.type(Q_PASSWORD_SELECTOR, pwd);
     await loginFrame.click(Q_BUTTON_SELECTOR);
     await delay(3000);
-    await delay(3000);
-    await delay(3000);
+    // await delay(3000);
+    // await delay(3000);
     await navigationPromise;
   } else if (type === 'fb') {
     await page.click(FB_SELECTOR);
@@ -180,8 +183,8 @@ const seed = async (type) => {
     await page.type(FB_PASSWORD_SELECTOR, fb.pwd);
     await page.click(FB_BUTTON_SELECTOR);
     await delay(3000);
-    await delay(3000);
-    await delay(3000);
+    // await delay(3000);
+    // await delay(3000);
     await navigationPromise;
   } else if (type === 'tw') {
     await page.click(TW_SELECTOR);
@@ -190,8 +193,8 @@ const seed = async (type) => {
     await page.type(TW_PASSWORD_SELECTOR, tw.pwd);
     await page.click(TW_BUTTON_SELECTOR);
     await delay(3000);
-    await delay(3000);
-    await delay(3000);
+    // await delay(3000);
+    // await delay(3000);
     await navigationPromise;
   } else if (type === 'wb') {
     await page.click(WB_SELECTOR);
@@ -200,62 +203,71 @@ const seed = async (type) => {
     await page.type(WB_PASSWORD_SELECTOR, wb.pwd);
     await page.click(WB_BUTTON_SELECTOR);
     await delay(3000);
-    await delay(3000);
+    // await delay(3000);
     await navigationPromise;
   }
   console.log(`${type}---浇水开始！`);
   const getZhongzi = await page.$(GET_SELECTOR);
+  console.log(`判断自身种子是否成熟`);
   if (getZhongzi) {
+    console.log(`使用种子`);
     await page.click(GET_SELECTOR);
-    await delay(1000);
+    // await delay(1000);
     await page.click(USE_SELECTOR);
+    await page.click(CLOSE_SELECTOR);
   }
-  await delay(1000);
+  console.log(`开始自我浇水`);
   await page.click(SELF_SELECTOR);
-  await delay(1000);
+  // await delay(1000);
+  console.log(`点击互动页`);
   await page.click(HUDONG_SELECTOR);
   await navigationPromise;
+  console.log(`点击可浇水按钮`);
   await page.click(CANSHIFEI_SELECTOR);
-  await delay(1000);
+  // await delay(1000);
   for (let i = 0; ; i++) {
-    await delay(1000);
+    // await delay(1000);
     await page.waitForSelector(FIRSTFRIENDSLIST_SELECTOR);
     // printHtml(page, FIRSTFRIENDSLIST_SELECTOR);
     const first = await page.$(FIRSTFRIENDS_SELECTOR);
+    console.log(`判断是否有人待浇水`);
     if (first) {
       console.log(`第${++nums}人---浇水`);
       await page.click(FIRSTFRIENDS_SELECTOR);
       await navigationPromise;
-      await delay(3000);
+      // await delay(3000);
       await page.waitForSelector(TEST);
       await page.click(TEST);
       console.log(`第${nums}人---浇完`);
-      await delay(1000);
+      // await delay(1000);
       await page.click(BACKFAMER_SELECTOR);
       await navigationPromise;
     } else {
+      console.log(`浇水完毕`);
       break
     }
   }
   console.log(`${type}---浇水结束！`);
+  console.log(' ');
+  console.log(' ');
   await browser.close();
 }
 
 (async () => {
   // 主号 走一波
   await seed('self');
-  // // 小米 走一波
-  // await seed('xiaomi');
-  // // Q 走一波
-  // await seed('Q1');
-  // await seed('Q2');
-  // await seed('Q3');
-  // await seed('Q4');
-  // await seed('Q5');
-  // // 脸书 走一波
-  // await seed('fb');
-  // // twitter 走一波
-  // await seed('tw');
-  // // weibo 走一波
-  // await seed('wb');
+  // 小米 走一波
+  await seed('xiaomi');
+  // Q 走一波
+  await seed('Q1');
+  await seed('Q2');
+  await seed('Q3');
+  await seed('Q4');
+  await seed('Q5');
+  // 脸书 走一波
+  await seed('fb');
+  // twitter 走一波
+  await seed('tw');
+  // weibo 走一波
+  await seed('wb');
 })()
