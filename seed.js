@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { user, xiaomi, Q1, Q2, Q3, Q4, Q5, fb, tw, wb } = require('./creds');
+const { user, xiaomi, Q, fb, tw, wb } = require('./creds');
 
 // 登录页
 const LOGIN_URL = 'https://passport.futu5.com/?target=https%3A%2F%2Fseed.futunn.com%2F';
@@ -27,6 +27,8 @@ const XIAOMI_BUTTON_SELECTOR = '#login-button';
 // #region Q
 // qq登录
 const Q_SELECTOR = 'body > div > div.m-form-wrapper.j-content-wrapper > div.u-oauth-login.j-oauth-login > div.open001 > div > a.qq.iconfont';
+// qqiframe
+const Q_FRAME_SELECTOR = '#ptlogin_iframe';
 // qq账号密码登录
 const Q_USERNAME_BTN_SELECTOR = '#switcher_plogin';
 // qq用户名
@@ -83,8 +85,8 @@ const SELF_SELECTOR = '#waterCanvas';
 const HUDONG_SELECTOR = 'body > div.seedWrap01 > div > div.commsendFootBtnBar > ul > li:nth-child(3) > a';
 // 可施肥
 const CANSHIFEI_SELECTOR = 'body > div.seedWrap01 > div > div.friends > div.friend-list-container > div.friend-filter > div > span';
-// 好友列表
-const FIRSTFRIENDSLIST_SELECTOR = 'body > div.seedWrap01 > div > div.friends > div.friend-list-container > ol';
+// 可施肥 为空
+const EMPTY_SELECTOR = 'body > div.seedWrap01 > div > div.friends > div.friend-list-container > div.friend-empty';
 // 第一个好友
 const FIRSTFRIENDS_SELECTOR = 'body > div.seedWrap01 > div > div.friends > div.friend-list-container > ol > li:nth-child(1) > a';
 // 浇水
@@ -98,13 +100,18 @@ const delay = (t) => {
   return new Promise(function(resolve) {
     setTimeout(resolve, t);
   });
-}
+};
 
-const printHtml = async (page, selector) => {
+const getHtml = async (page, selector) => {
   const bodyHandle = await page.$(selector);
-  const html = await page.evaluate(body => body.innerHTML, bodyHandle);
-  console.log(html);
-  await bodyHandle.dispose();
+  if (bodyHandle) {
+    const html = await page.evaluate(body => body.innerHTML, bodyHandle);
+    // console.log(html);
+    await bodyHandle.dispose();
+    return html;
+  } else {
+    return '';
+  }
 };
 
 const seed = async (type) => {
@@ -114,160 +121,139 @@ const seed = async (type) => {
   let args = [];
   args.push(`--window-size=${width},${height}`);
   // const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
-  const browser = await puppeteer.launch({slowMo: 300});
+  const browser = await puppeteer.launch({slowMo: 100});
   const page = await browser.newPage();
   // 去除 页面内部自定义宽高 导致 滚动条出现
   await page._client.send('Emulation.clearDeviceMetricsOverride');
   await page.goto(LOGIN_URL, {waitUntil: 'load'});
   await page.setDefaultNavigationTimeout(60 * 1000);
-  const navigationPromise = page.waitForNavigation();
+  // const navigationPromise = page.waitForNavigation();
   console.log(`开始判断当前角色-${type}`);
   if (type === 'self') {
-    await page.type(USERNAME_SELECTOR, user.name);
-    await page.type(PASSWORD_SELECTOR, user.pwd);
-    await page.click(BUTTON_SELECTOR);
-    await navigationPromise;
+    await page.evaluate((username, password, button, name, pwd) => {
+      document.querySelector(username).value = name;
+      document.querySelector(password).value = pwd;
+      document.querySelector(button).click();
+    }, USERNAME_SELECTOR, PASSWORD_SELECTOR, BUTTON_SELECTOR, user.name, user.pwd);
+    await page.waitForNavigation();
   } else if (type === 'xiaomi') {
     await page.click(XIAOMI_SELECTOR);
-    await navigationPromise;
-    await page.type(XIAOMI_USERNAME_SELECTOR, xiaomi.name);
-    await page.type(XIAOMI_PASSWORD_SELECTOR, xiaomi.pwd);
-    await page.click(XIAOMI_BUTTON_SELECTOR);
-    await delay(3000);
-    // await delay(3000);
-    // await delay(3000);
-    await navigationPromise;
+    await page.waitForSelector(XIAOMI_USERNAME_SELECTOR, {visible: true});
+    await page.evaluate((username, password, button, name, pwd) => {
+      document.querySelector(username).value = name;
+      document.querySelector(password).value = pwd;
+      document.querySelector(button).click();
+    }, XIAOMI_USERNAME_SELECTOR, XIAOMI_PASSWORD_SELECTOR, XIAOMI_BUTTON_SELECTOR, xiaomi.name, xiaomi.pwd);
+    await page.waitForNavigation();
   } else if (['Q1', 'Q2', 'Q3', 'Q4', 'Q5'].includes(type)) {
     await page.click(Q_SELECTOR);
-    await navigationPromise;
+    let name = Q[type].name;
+    let pwd = Q[type].pwd;
+    await page.waitForSelector(Q_FRAME_SELECTOR, {visible: true});
     const loginFrame = page.mainFrame().childFrames()[0];
-    await loginFrame.click(Q_USERNAME_BTN_SELECTOR);
-    let name = '';
-    let pwd = '';
-    switch (type) {
-      case 'Q1':
-        name = Q1.name;
-        pwd = Q1.pwd;
-        break;
-      case 'Q2':
-        name = Q2.name;
-        pwd = Q2.pwd;
-        break;
-      case 'Q3':
-        name = Q3.name;
-        pwd = Q3.pwd;
-        break;
-      case 'Q4':
-        name = Q4.name;
-        pwd = Q4.pwd;
-        break;
-      case 'Q5':
-        name = Q5.name;
-        pwd = Q5.pwd;
-        break;
-      default:
-        console.warn('未找到Q用户名');
-        return false;
-    }
-    await loginFrame.type(Q_USERNAME_SELECTOR, name);
-    await loginFrame.type(Q_PASSWORD_SELECTOR, pwd);
+    await loginFrame.waitForSelector(Q_USERNAME_BTN_SELECTOR, {visible: true});
+    await loginFrame.evaluate((qqlogin, username, password, button, name, pwd) => {
+      document.querySelector(qqlogin).click();
+      document.querySelector(username).value = name;
+      document.querySelector(password).value = pwd;
+      document.querySelector(button).click();
+    },Q_USERNAME_BTN_SELECTOR, Q_USERNAME_SELECTOR, Q_PASSWORD_SELECTOR, Q_BUTTON_SELECTOR, name, pwd);
     await loginFrame.click(Q_BUTTON_SELECTOR);
-    await delay(3000);
-    // await delay(3000);
-    // await delay(3000);
-    await navigationPromise;
+    await page.waitForNavigation();
   } else if (type === 'fb') {
     await page.click(FB_SELECTOR);
-    await navigationPromise;
-    await page.type(FB_USERNAME_SELECTOR, fb.name);
-    await page.type(FB_PASSWORD_SELECTOR, fb.pwd);
-    await page.click(FB_BUTTON_SELECTOR);
-    await delay(3000);
-    // await delay(3000);
-    // await delay(3000);
-    await navigationPromise;
+    await page.waitForSelector(FB_USERNAME_SELECTOR, {visible: true});
+    await page.evaluate((username, password, button, name, pwd) => {
+      document.querySelector(username).value = name;
+      document.querySelector(password).value = pwd;
+      document.querySelector(button).click();
+    }, FB_USERNAME_SELECTOR, FB_PASSWORD_SELECTOR, FB_BUTTON_SELECTOR, fb.name, fb.pwd);
+    await page.waitForNavigation();
   } else if (type === 'tw') {
     await page.click(TW_SELECTOR);
-    await navigationPromise;
-    await page.type(TW_USERNAME_SELECTOR, tw.name);
-    await page.type(TW_PASSWORD_SELECTOR, tw.pwd);
-    await page.click(TW_BUTTON_SELECTOR);
-    await delay(3000);
-    // await delay(3000);
-    // await delay(3000);
-    await navigationPromise;
+    await page.waitForSelector(TW_USERNAME_SELECTOR, {visible: true});
+    await page.evaluate((username, password, button, name, pwd) => {
+      document.querySelector(username).value = name;
+      document.querySelector(password).value = pwd;
+      document.querySelector(button).click();
+    }, TW_USERNAME_SELECTOR, TW_PASSWORD_SELECTOR, TW_BUTTON_SELECTOR, tw.name, tw.pwd);
+    await page.waitForNavigation();
   } else if (type === 'wb') {
     await page.click(WB_SELECTOR);
-    await navigationPromise;
+    await page.waitForSelector(WB_USERNAME_SELECTOR, {visible: true});
+
+    // 微博 傻逼
+    // await page.evaluate((username, password, name, pwd) => {
+    //   document.querySelector(username).value = name;
+    //   document.querySelector(password).value = pwd;
+    // }, WB_USERNAME_SELECTOR, WB_PASSWORD_SELECTOR, wb.name, wb.pwd);
+
+    // await page.focus(WB_USERNAME_SELECTOR);
+    // await page.keyboard.press('Delete', {delay: 1000});
     await page.type(WB_USERNAME_SELECTOR, wb.name);
     await page.type(WB_PASSWORD_SELECTOR, wb.pwd);
     await page.click(WB_BUTTON_SELECTOR);
-    await delay(3000);
-    // await delay(3000);
-    await navigationPromise;
+    await page.waitForNavigation();
   }
   console.log(`${type}---浇水开始！`);
-  const getZhongzi = await page.$(GET_SELECTOR);
-  console.log(`判断自身种子是否成熟`);
-  if (getZhongzi) {
+  const judgeIsGet = await Promise.race([
+    page.waitForSelector(GET_SELECTOR, {visible: true}).then(_ => 1),
+    page.waitForSelector(SELF_SELECTOR, {visible: true}).then(_ => 2)
+  ]);
+  if (judgeIsGet === 1) {
     console.log(`使用种子`);
     await page.click(GET_SELECTOR);
-    // await delay(1000);
+    await page.waitForSelector(USE_SELECTOR, {visible: true});
     await page.click(USE_SELECTOR);
+    await page.waitForSelector(CLOSE_SELECTOR, {visible: true});
     await page.click(CLOSE_SELECTOR);
   }
   console.log(`开始自我浇水`);
   await page.click(SELF_SELECTOR);
-  // await delay(1000);
   console.log(`点击互动页`);
   await page.click(HUDONG_SELECTOR);
-  await navigationPromise;
   console.log(`点击可浇水按钮`);
+  await page.waitForSelector(CANSHIFEI_SELECTOR, {visible: true});
   await page.click(CANSHIFEI_SELECTOR);
-  // await delay(1000);
   for (let i = 0; ; i++) {
-    // await delay(1000);
-    await page.waitForSelector(FIRSTFRIENDSLIST_SELECTOR);
-    // printHtml(page, FIRSTFRIENDSLIST_SELECTOR);
-    const first = await page.$(FIRSTFRIENDS_SELECTOR);
-    console.log(`判断是否有人待浇水`);
-    if (first) {
-      console.log(`第${++nums}人---浇水`);
-      await page.click(FIRSTFRIENDS_SELECTOR);
-      await navigationPromise;
-      // await delay(3000);
-      await page.waitForSelector(TEST);
-      await page.click(TEST);
-      console.log(`第${nums}人---浇完`);
-      // await delay(1000);
-      await page.click(BACKFAMER_SELECTOR);
-      await navigationPromise;
-    } else {
-      console.log(`浇水完毕`);
-      break
+    console.log(`------判断是否有人待浇水------`);
+    const judgeIsEnd = await Promise.race([
+      page.waitForSelector(EMPTY_SELECTOR, {visible: true}).then(_ => 1).catch(err => 1),
+      page.waitForSelector(EMPTY_SELECTOR, {hidden: true}).then(_ => 2).catch(err => 1)
+    ]);
+    if (judgeIsEnd === 1) {
+      console.log(`${type}---浇水结束！`);
+      console.log(' ');
+      console.log(' ');
+      await browser.close();
+      return;
     }
+    console.log(`         第${++nums}人---浇水`);
+    await page.click(FIRSTFRIENDS_SELECTOR);
+    console.log('          来到浇水页');
+    await page.waitForSelector(TEST, {visible: true});
+    await page.click(TEST);
+    console.log(`         第${nums}人---浇完`);
+    await page.waitForSelector(BACKFAMER_SELECTOR, {visible: true});
+    await page.click(BACKFAMER_SELECTOR);
   }
-  console.log(`${type}---浇水结束！`);
-  console.log(' ');
-  console.log(' ');
-  await browser.close();
 }
 
 (async () => {
   // 主号 走一波
   await seed('self');
   // 小米 走一波
-  await seed('xiaomi');
+  // await seed('xiaomi');
   // Q 走一波
-  await seed('Q1');
-  await seed('Q2');
-  await seed('Q3');
-  await seed('Q4');
-  await seed('Q5');
+  // await seed('Q1');
+  // await seed('Q2');
+  // await seed('Q3');
+  // await seed('Q4');
+  // await seed('Q5');
   // 脸书 走一波
-  await seed('fb');
+  // await seed('fb');
   // twitter 走一波
-  await seed('tw');
+  // await seed('tw');
   // weibo 走一波
-  await seed('wb');
+  // await seed('wb');
 })()
