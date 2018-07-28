@@ -217,11 +217,13 @@ const seed = async (type) => {
   await page.click(CANSHIFEI_SELECTOR);
   for (let i = 0; ; i++) {
     console.log(`------判断是否有人待浇水------`);
-    const judgeIsEnd = await Promise.race([
-      page.waitForSelector(EMPTY_SELECTOR, {visible: true}).then(_ => 1).catch(err => 1),
-      page.waitForSelector(EMPTY_SELECTOR, {hidden: true}).then(_ => 2).catch(err => 1)
-    ]);
-    if (judgeIsEnd === 1) {
+    let judgeIsEnd = 1;
+    try {
+      await page.waitForSelector(FIRSTFRIENDS_SELECTOR, {visible: true, timeout: 1000});
+    } catch (error) {
+      judgeIsEnd = 2;
+    }
+    if (judgeIsEnd === 2) {
       console.log(`${type}---浇水结束！`);
       console.log(' ');
       console.log(' ');
@@ -243,17 +245,17 @@ const seed = async (type) => {
   // 主号 走一波
   await seed('self');
   // 小米 走一波
-  // await seed('xiaomi');
+  await seed('xiaomi');
   // Q 走一波
-  // await seed('Q1');
-  // await seed('Q2');
-  // await seed('Q3');
-  // await seed('Q4');
-  // await seed('Q5');
+  await seed('Q1');
+  await seed('Q2');
+  await seed('Q3');
+  await seed('Q4');
+  await seed('Q5');
   // 脸书 走一波
-  // await seed('fb');
+  await seed('fb');
   // twitter 走一波
-  // await seed('tw');
+  await seed('tw');
   // weibo 走一波
-  // await seed('wb');
+  await seed('wb');
 })()
