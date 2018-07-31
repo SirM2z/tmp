@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const program = require('commander');
 const { user, xiaomi, Q, fb, tw, wb } = require('./creds');
 
+// #region 签到 发表
 // 登录页
 const LOGIN_URL = 'https://passport.futu5.com/?target=https%3A%2F%2Fwww.futunn.com%2F';
 // 个人中心页
@@ -18,12 +19,13 @@ const CIRCLE_FRAME_SELECTOR = '#ueditor_0';
 const INPUT_SELECTOR = 'body';
 // 发表按钮
 const PUBLISH_BTN_SELECTOR = '#dynamicBar > div > a';
+// #endregion
+
+// #region login
 // 需登录的种子页
 const SEED_LOGIN_URL = 'https://passport.futu5.com/?target=https%3A%2F%2Fseed.futunn.com%2F';
 // 种子页
 const SEED_URL = 'https://seed.futunn.com/';
-
-// #region login
 // 用户名
 const USERNAME_SELECTOR = '#loginFormWrapper > form > ul > li.ui-input-wrapper.ui-content-email > input';
 // 密码
@@ -114,12 +116,6 @@ const TEST = 'body > div.fertMainArea > div:nth-child(4)';
 // 回农场
 const BACKFAMER_SELECTOR = 'body > a.back-home';
 // #endregion
-
-const delay = (t) => {
-  return new Promise(function(resolve) {
-    setTimeout(resolve, t);
-  });
-};
 
 const getHtml = async (page, selector) => {
   const bodyHandle = await page.$(selector);
@@ -240,46 +236,10 @@ const publish = async (page) => {
   console.log(`------结束发表牛牛圈------`);
 };
 
-const main = async (type) => {
+// 浇水
+const water = async (browser, page, type) => {
+  // 浇水人数
   let nums = 0;
-  const width = 750;
-  const height = 950;
-  let args = [];
-  args.push(`--window-size=${width},${height}`);
-  const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
-  // const browser = await puppeteer.launch({slowMo: 100});
-  const page = await browser.newPage();
-  // 去除 页面内部自定义宽高 导致 滚动条出现
-  await page._client.send('Emulation.clearDeviceMetricsOverride');
-  // 判断是否开启 签到功能
-  if (program.sign || program.publish) {
-    await page.goto(LOGIN_URL, {waitUntil: 'load'});
-  } else {
-    await page.goto(SEED_LOGIN_URL, {waitUntil: 'load'});
-  }
-  await page.setDefaultNavigationTimeout(60 * 1000);
-  // const navigationPromise = page.waitForNavigation();
-  // 登录
-  await login(page, type);
-  // 是否签到
-  if (program.sign) {
-    await sign(page);
-  }
-  // 是否发布牛牛圈
-  if (program.publish) {
-    await publish(page);
-  }
-  // 是否开启浇水功能
-  if (!program.water) {
-    await browser.close();
-    return false;
-  }
-  // 是否签到 或 是否发布圈子
-  if (program.sign || program.publish) {
-    await page.goto(SEED_URL, {waitUntil: 'load'});
-    await page.waitForNavigation();
-  }
-  // 开始浇水
   console.log(`${type}---浇水开始！`);
   const judgeIsGet = await Promise.race([
     page.waitForSelector(GET_SELECTOR, {visible: true}).then(_ => 1),
@@ -324,6 +284,47 @@ const main = async (type) => {
     await page.waitForSelector(BACKFAMER_SELECTOR, {visible: true});
     await page.click(BACKFAMER_SELECTOR);
   }
+}
+
+const main = async (type) => {
+  const width = 750;
+  const height = 950;
+  let args = [];
+  args.push(`--window-size=${width},${height}`);
+  // const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
+  const browser = await puppeteer.launch({slowMo: 100});
+  const page = await browser.newPage();
+  // 去除 页面内部自定义宽高 导致 滚动条出现
+  await page._client.send('Emulation.clearDeviceMetricsOverride');
+  // 判断是否开启 签到功能
+  if (program.sign || program.publish) {
+    await page.goto(LOGIN_URL, {waitUntil: 'load'});
+  } else {
+    await page.goto(SEED_LOGIN_URL, {waitUntil: 'load'});
+  }
+  await page.setDefaultNavigationTimeout(60 * 1000);
+  // 登录
+  await login(page, type);
+  // 是否签到
+  if (program.sign) {
+    await sign(page);
+  }
+  // 是否发布牛牛圈
+  if (program.publish) {
+    await publish(page);
+  }
+  // 是否开启浇水功能
+  if (!program.water) {
+    await browser.close();
+    return false;
+  }
+  // 是否签到 或 是否发布圈子
+  if (program.sign || program.publish) {
+    await page.goto(SEED_URL, {waitUntil: 'load'});
+    await page.waitForNavigation();
+  }
+  // 开始浇水
+  await water(browser, page, type);
 }
 
 (async () => {
