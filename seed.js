@@ -1,8 +1,27 @@
 const puppeteer = require('puppeteer');
+const program = require('commander');
 const { user, xiaomi, Q, fb, tw, wb } = require('./creds');
 
 // 登录页
-const LOGIN_URL = 'https://passport.futu5.com/?target=https%3A%2F%2Fseed.futunn.com%2F';
+const LOGIN_URL = 'https://passport.futu5.com/?target=https%3A%2F%2Fwww.futunn.com%2F';
+// 个人中心页
+const PERSONAL_SELECTOR = '#accountHeader > div:nth-child(1) > div.imgBox > a';
+// 签到按钮
+const SIGNIN_SELECTOR = '#signIn';
+// 发表牛牛圈页面
+const PUBLISH_CIRCLE_URL = 'https://www.futunn.com/nnq';
+// 聚焦的 输入框
+const FOCUS_INPUT_SELECTOR = '#placeholder';
+// 输入文字的 iframe
+const CIRCLE_FRAME_SELECTOR = '#ueditor_0';
+// 输入文字的 输入框
+const INPUT_SELECTOR = 'body';
+// 发表按钮
+const PUBLISH_BTN_SELECTOR = '#dynamicBar > div > a';
+// 需登录的种子页
+const SEED_LOGIN_URL = 'https://passport.futu5.com/?target=https%3A%2F%2Fseed.futunn.com%2F';
+// 种子页
+const SEED_URL = 'https://seed.futunn.com/';
 
 // #region login
 // 用户名
@@ -114,21 +133,9 @@ const getHtml = async (page, selector) => {
   }
 };
 
-const seed = async (type) => {
-  let nums = 0;
-  const width = 750;
-  const height = 950;
-  let args = [];
-  args.push(`--window-size=${width},${height}`);
-  // const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
-  const browser = await puppeteer.launch({slowMo: 100});
-  const page = await browser.newPage();
-  // 去除 页面内部自定义宽高 导致 滚动条出现
-  await page._client.send('Emulation.clearDeviceMetricsOverride');
-  await page.goto(LOGIN_URL, {waitUntil: 'load'});
-  await page.setDefaultNavigationTimeout(60 * 1000);
-  // const navigationPromise = page.waitForNavigation();
-  console.log(`开始判断当前角色-${type}`);
+// 登录功能
+const login = async (page, type) => {
+  console.log(`------开始登录当前角色-${type}------`);
   if (type === 'self') {
     await page.evaluate((username, password, button, name, pwd) => {
       document.querySelector(username).value = name;
@@ -195,6 +202,84 @@ const seed = async (type) => {
     await page.click(WB_BUTTON_SELECTOR);
     await page.waitForNavigation();
   }
+  console.log(`------结束登录当前角色-${type}------`);
+};
+
+// 签到功能
+const sign = async (page) => {
+  console.log(`------开始签到------`);
+  await page.click(PERSONAL_SELECTOR);
+  let judgeIsSign = 1;
+  try {
+    await page.waitForSelector(SIGNIN_SELECTOR, {visible: true, timeout: 3000});
+  } catch (error) {
+    judgeIsSign = 2;
+  }
+  if (judgeIsSign === 1) {
+    console.log(`      成功签到`);
+    await page.click(SIGNIN_SELECTOR);
+  } else {
+    console.log(`     今天已签到`);
+  }
+  console.log(`------签到结束------`);
+};
+
+// 发表牛牛圈功能
+const publish = async (page) => {
+  console.log(`------开始发表牛牛圈------`);
+  await page.goto(PUBLISH_CIRCLE_URL);
+  await page.waitForSelector(FOCUS_INPUT_SELECTOR, {visible: true});
+  await page.click(FOCUS_INPUT_SELECTOR);
+  await page.waitForSelector(CIRCLE_FRAME_SELECTOR, {visible: true});
+  const circleFrame = page.mainFrame().childFrames()[0];
+  console.log(`开始输入发表内容`);
+  await circleFrame.focus(INPUT_SELECTOR);
+  await page.keyboard.type(program.message);
+  await page.keyboard.down('Enter');
+  await page.click(PUBLISH_BTN_SELECTOR);
+  console.log(`------结束发表牛牛圈------`);
+};
+
+const main = async (type) => {
+  let nums = 0;
+  const width = 750;
+  const height = 950;
+  let args = [];
+  args.push(`--window-size=${width},${height}`);
+  const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
+  // const browser = await puppeteer.launch({slowMo: 100});
+  const page = await browser.newPage();
+  // 去除 页面内部自定义宽高 导致 滚动条出现
+  await page._client.send('Emulation.clearDeviceMetricsOverride');
+  // 判断是否开启 签到功能
+  if (program.sign || program.publish) {
+    await page.goto(LOGIN_URL, {waitUntil: 'load'});
+  } else {
+    await page.goto(SEED_LOGIN_URL, {waitUntil: 'load'});
+  }
+  await page.setDefaultNavigationTimeout(60 * 1000);
+  // const navigationPromise = page.waitForNavigation();
+  // 登录
+  await login(page, type);
+  // 是否签到
+  if (program.sign) {
+    await sign(page);
+  }
+  // 是否发布牛牛圈
+  if (program.publish) {
+    await publish(page);
+  }
+  // 是否开启浇水功能
+  if (!program.water) {
+    await browser.close();
+    return false;
+  }
+  // 是否签到 或 是否发布圈子
+  if (program.sign || program.publish) {
+    await page.goto(SEED_URL, {waitUntil: 'load'});
+    await page.waitForNavigation();
+  }
+  // 开始浇水
   console.log(`${type}---浇水开始！`);
   const judgeIsGet = await Promise.race([
     page.waitForSelector(GET_SELECTOR, {visible: true}).then(_ => 1),
@@ -242,20 +327,32 @@ const seed = async (type) => {
 }
 
 (async () => {
-  // 主号 走一波
-  await seed('self');
-  // 小米 走一波
-  await seed('xiaomi');
-  // Q 走一波
-  await seed('Q1');
-  await seed('Q2');
-  await seed('Q3');
-  await seed('Q4');
-  await seed('Q5');
-  // 脸书 走一波
-  await seed('fb');
-  // twitter 走一波
-  await seed('tw');
-  // weibo 走一波
-  await seed('wb');
+  program
+    .version('0.0.1')
+    .option('-w, --water [type]', '浇水功能，默认开启', true)
+    .option('-a, --all', '浇水功能中，是否所有账号开启登录，默认只登自己账号')
+    .option('-s, --sign', '签到功能')
+    .option('-p, --publish', '发表牛牛圈功能')
+    .option('-m, --message [type]', '发表牛牛圈时，发表内容', '坚持打卡，坚持早起')
+    .parse(process.argv);
+
+  if (program.all) {
+    // 小米 走一波
+    await main('xiaomi');
+    // Q 走一波
+    await main('Q1');
+    await main('Q2');
+    await main('Q3');
+    await main('Q4');
+    await main('Q5');
+    // 脸书 走一波
+    await main('fb');
+    // twitter 走一波
+    await main('tw');
+    // weibo 走一波
+    await main('wb');
+  } else {
+    // 主号 走一波
+    await main('self');
+  }
 })()
