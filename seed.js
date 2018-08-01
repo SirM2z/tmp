@@ -94,6 +94,8 @@ const WB_BUTTON_SELECTOR = '#outer > div > div.WB_panel.oauth_main > form > div 
 // #endregion
 
 // #region main
+// 底部 footer
+const FOOTER_SELECTOR = 'body > div.seedWrap01 > div > div.commsendFootBtnBar';
 // 收种子
 const GET_SELECTOR = '#useCanvas';
 // 使用种子
@@ -240,6 +242,7 @@ const publish = async (page) => {
 const water = async (browser, page, type) => {
   // 浇水人数
   let nums = 0;
+  await page.waitForSelector(FOOTER_SELECTOR, {visible: true})
   console.log(`${type}---浇水开始！`);
   const judgeIsGet = await Promise.race([
     page.waitForSelector(GET_SELECTOR, {visible: true}).then(_ => 1),
@@ -291,8 +294,8 @@ const main = async (type) => {
   const height = 950;
   let args = [];
   args.push(`--window-size=${width},${height}`);
-  // const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
-  const browser = await puppeteer.launch({slowMo: 100});
+  const browser = await puppeteer.launch({headless: false, slowMo: 100, args});
+  // const browser = await puppeteer.launch({slowMo: 100});
   const page = await browser.newPage();
   // 去除 页面内部自定义宽高 导致 滚动条出现
   await page._client.send('Emulation.clearDeviceMetricsOverride');
@@ -321,7 +324,6 @@ const main = async (type) => {
   // 是否签到 或 是否发布圈子
   if (program.sign || program.publish) {
     await page.goto(SEED_URL, {waitUntil: 'load'});
-    await page.waitForNavigation();
   }
   // 开始浇水
   await water(browser, page, type);
@@ -334,7 +336,7 @@ const main = async (type) => {
     .option('-a, --all', '浇水功能中，是否所有账号开启登录，默认只登自己账号')
     .option('-s, --sign', '签到功能')
     .option('-p, --publish', '发表牛牛圈功能')
-    .option('-m, --message [type]', '发表牛牛圈时，发表内容', '坚持打卡，坚持早起')
+    .option('-m, --message [type]', '发表牛牛圈时，发表内容', '坚持打卡')
     .parse(process.argv);
 
   if (program.all) {
